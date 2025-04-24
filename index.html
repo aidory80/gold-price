@@ -41,30 +41,21 @@
   </div>
 
   <script>
-    const goldApiKey = "729c1feac3a6d32c0ddb6d66be8d48b3";
-
     async function fetchGoldPrice() {
       try {
-        // 1. 금 가격 (XAU/USD)
-        const goldResponse = await fetch("https://www.goldapi.io/api/XAU/USD", {
-          headers: {
-            "x-access-token": goldApiKey,
-            "Content-Type": "application/json"
-          }
-        });
-        const goldData = await goldResponse.json();
-        const xauUsd = goldData.price; // 달러/온스
+        // 샘플 금 시세 (XAU/USD) - 예시값 사용
+        const xauUsd = 2300;
 
-        // 2. 환율 (USD → KRW)
+        // 환율 (USD → KRW)
         const fxResponse = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=KRW");
         const fxData = await fxResponse.json();
         const usdKrw = fxData.rates.KRW;
 
-        // 3. 원/그램 계산
+        // 원/그램 계산
         const gramsPerOunce = 31.1035;
         const pricePerGramKrw = (xauUsd / gramsPerOunce) * usdKrw;
 
-        // 4. 표시
+        // 화면에 표시
         document.getElementById("price").textContent = pricePerGramKrw.toLocaleString("ko-KR", {
           style: "currency",
           currency: "KRW"
@@ -74,13 +65,12 @@
           "최종 업데이트: " + new Date().toLocaleString();
       } catch (error) {
         document.getElementById("price").textContent = "오류 발생 😢";
-        console.error("금 시세 가져오기 실패:", error);
+        console.error("데이터 가져오기 실패:", error);
       }
     }
 
     fetchGoldPrice();
-    // 10분마다 자동 업데이트
-    setInterval(fetchGoldPrice, 600000);
+    setInterval(fetchGoldPrice, 600000); // 10분마다 업데이트
   </script>
 </body>
 </html>
