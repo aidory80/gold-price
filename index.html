@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>실시간 금 시세</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f7f7f7;
+      text-align: center;
+      padding: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      display: inline-block;
+    }
+    h1 {
+      color: #222;
+    }
+    #price {
+      font-size: 2rem;
+      margin-top: 1rem;
+      color: #c9a00c;
+    }
+    .timestamp {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>실시간 금 시세 (원/그램)</h1>
+    <div id="price">불러오는 중...</div>
+    <div class="timestamp" id="timestamp"></div>
+  </div>
+
+  <script>
+    const goldApiKey = "729c1feac3a6d32c0ddb6d66be8d48b3";
+
+    async function fetchGoldPrice() {
+      try {
+        // 1. 금 가격 (XAU/USD)
+        const goldResponse = await fetch("https://www.goldapi.io/api/XAU/USD", {
+          headers: {
+            "x-access-token": goldApiKey,
+            "Content-Type": "application/json"
+          }
+        });
+        const goldData = await goldResponse.json();
+        const xauUsd = goldData.price; // 달러/온스
+
+        // 2. 환율 (USD → KRW)
+        const fxResponse = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=KRW");
+        const fxData = await fxResponse.json();
+        const usdKrw = fxData.rates.KRW;
+
+        // 3. 원/그램 계산
+        const gramsPerOunce = 31.1035;
+        const pricePerGramKrw = (xauUsd / gramsPerOunce) * usdKrw;
+
+        // 4. 표시
+        document.getElementById("price").textContent = pricePerGramKrw.toLocaleString("ko-KR", {
+          style: "currency",
+          currency: "KRW"
+        });
+
+        document.getElementById("timestamp").textContent =
+          "최종 업데이트: " + new Date().toLocaleString();
+      } catch (error) {
+        document.getElementById("price").textContent = "오류 발생 😢";
+        console.error("금 시세 가져오기 실패:", error);
+      }
+    }
+
+    fetchGoldPrice();
+    // 10분마다 자동 업데이트
+    setInterval(fetchGoldPrice, 600000);
+  </script>
+</body>
+</html>
